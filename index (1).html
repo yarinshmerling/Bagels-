@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Maria's Bagels">
+  <meta name="theme-color" content="#1a1208">
+  <title>Maria's Bagels 🥯</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:     #1a1208;
+      --sesame:  #c8702a;
+      --cream:   #faf6ee;
+      --dough:   #f0e8d5;
+      --muted:   #8a7a62;
+      --border:  #d8cbb5;
+      --white:   #ffffff;
+      --success: #3a7d44;
+      --r: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+    }
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .header {
+      background: var(--ink);
+      color: var(--cream);
+      padding-top: calc(env(safe-area-inset-top, 0px) + 14px);
+      padding-bottom: 14px;
+      padding-left: 1.25rem;
+      padding-right: 1.25rem;
+      flex-shrink: 0;
+    }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; }
+    .header h1 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+    .header-badge {
+      background: var(--sesame);
+      color: var(--white);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 20px;
+      letter-spacing: 0.3px;
+    }
+    .tabs {
+      display: flex;
+      background: var(--ink);
+      border-bottom: 2px solid var(--sesame);
+      padding: 0 1.25rem;
+      flex-shrink: 0;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px 0;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tab-btn.active { color: var(--cream); border-bottom-color: var(--sesame); }
+    .panel {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 1.25rem;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+      display: none;
+    }
+    .panel.active { display: block; }
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 1.5rem 0 0.6rem;
+    }
+    .section-label:first-child { margin-top: 0; }
+    .field { margin-bottom: 0.85rem; }
+    label.field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 5px;
+      letter-spacing: 0.2px;
+    }
+    input[type="text"], textarea, select {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      background: var(--white);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--sesame); }
+    textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a7a62' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip {
+      padding: 6px 13px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.12s;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .chip.on { border-color: var(--sesame); background: var(--sesame); color: var(--white); }
+    .stars-wrap { display: flex; gap: 5px; margin-top: 4px; }
+    .star {
+      font-size: 28px;
+      cursor: pointer;
+      opacity: 0.25;
+      transition: opacity 0.1s, transform 0.1s;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      line-height: 1;
+    }
+    .star.on { opacity: 1; }
+    .star:active { transform: scale(0.9); }
+    .sub-ratings {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background: var(--dough);
+      border-radius: var(--r);
+      padding: 12px;
+      margin-top: 0.5rem;
+    }
+    .sub-r-label { font-size: 11px; color: var(--muted); font-weight: 500; margin-bottom: 4px; }
+    .mini-stars { display: flex; gap: 3px; }
+    .mini-star { font-size: 18px; cursor: pointer; opacity: 0.25; transition: opacity 0.1s; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .mini-star.on { opacity: 1; }
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--sesame);
+      color: var(--white);
+      border: none;
+      border-radius: var(--r);
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-style: italic;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      transition: opacity 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .submit-btn:active { opacity: 0.85; transform: scale(0.99); }
+    .feed { display: flex; flex-direction: column; gap: 1rem; }
+    .review-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .review-top { background: var(--ink); padding: 14px 16px 12px; color: var(--cream); }
+    .review-shop { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; letter-spacing: -0.2px; }
+    .review-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+    .review-date { font-size: 11px; color: var(--muted); }
+    .review-body { padding: 14px 16px; }
+    .review-stars-row { font-size: 20px; margin-bottom: 10px; }
+    .review-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+    .review-chip { font-size: 11px; padding: 3px 9px; border-radius: 20px; background: var(--dough); color: var(--ink); font-weight: 500; }
+    .review-chip.accent { background: var(--sesame); color: var(--white); }
+    .review-notes {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 14px;
+      color: var(--ink);
+      line-height: 1.65;
+      border-left: 2.5px solid var(--sesame);
+      padding-left: 10px;
+      margin-bottom: 10px;
+    }
+    .review-sub { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+    .review-sub-item { font-size: 11px; color: var(--muted); }
+    .review-verdict { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--dough); font-size: 12px; color: var(--muted); }
+    .verdict-val { color: var(--ink); font-weight: 500; }
+    .empty { text-align: center; padding: 4rem 1rem 2rem; }
+    .empty-emoji { font-size: 52px; margin-bottom: 16px; }
+    .empty h2 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .empty p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .toast {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: var(--success);
+      color: var(--white);
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (prefers-color-scheme: dark) {
+      :root { --cream: #1a1208; --dough: #251c10; --white: #2a2010; --border: #3d3020; --muted: #8a7a62; --ink: #f0e8d5; }
+      .header, .review-top { background: #0e0b05; }
+      .stat-card { background: #0e0b05; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-inner">
+      <h1>🥯 Maria's Bagels</h1>
+      <span class="header-badge" id="count-badge">NYC</span>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('log')">Log a bagel</button>
+    <button class="tab-btn" onclick="switchTab('feed')">All reviews</button>
+  </div>
+
+  <div class="panel active" id="panel-log">
+    <p class="section-label">The shop</p>
+
+    <div class="field">
+      <label class="field-label">Restaurant / bagel shop *</label>
+      <input type="text" id="restaurant" placeholder="...">
+    </div>
+
+    <p class="section-label">The bagel</p>
+
+    <div class="field">
+      <label class="field-label">Bagel type</label>
+      <div class="chips" id="chips-type">
+        <span class="chip" onclick="toggleSingle(this,'type')">Plain</span>
+        <span class="chip" onclick="toggleSingle(this,'type')">Everything</span>
+        <span class="chip" onclick="toggleSingle(this,'type')">Sesame</span>
+        <span class="chip" onclick="toggleSingle(this,'type')">Onion</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Schmear</label>
+      <div class="chips" id="chips-schmear">
+        <span class="chip" onclick="toggleMulti(this,'schmear')">Yes</span>
+        <span class="chip" onclick="toggleMulti(this,'schmear')">Yes, a lot!</span>
+        <span class="chip" onclick="toggleMulti(this,'schmear')">No</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Toppings</label>
+      <div class="chips" id="chips-toppings">
+        <span class="chip" onclick="toggleMulti(this,'toppings')">Lox</span>
+        
+        <span class="chip" onclick="toggleMulti(this,'toppings')">Capers</span>
+        <span class="chip" onclick="toggleMulti(this,'toppings')">Red onion</span>
+        <span class="chip" onclick="toggleMulti(this,'toppings')">Tomato</span>
+        <span class="chip" onclick="toggleMulti(this,'toppings')">Cucumber</span>
+        <span class="chip" onclick="toggleMulti(this,'toppings')">Egg</span>
+        <span class="chip" onclick="toggleMulti(this,'toppings')">Like, i don't know, beef?</span>
+        <span class="chip" id="chip-add-topping" onclick="showCustomTopping()" style="border-style:dashed">+ other</span>
+      </div>
+      <div id="custom-topping-wrap" style="display:none;margin-top:8px;display:none">
+        <div style="display:flex;gap:6px">
+          <input type="text" id="custom-topping-input" placeholder="Type a topping…" style="flex:1;padding:7px 11px;font-size:13px" onkeydown="if(event.key==='Enter')addCustomTopping()">
+          <button onclick="addCustomTopping()" style="padding:7px 13px;border:1.5px solid var(--sesame);border-radius:var(--r);background:var(--sesame);color:white;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-label">The verdict</p>
+
+    <div class="field">
+      <label class="field-label">Overall rating *</label>
+      <div class="stars-wrap" id="overall-stars">
+        <span class="star" onclick="setStars('overall',1)">⭐</span>
+        <span class="star" onclick="setStars('overall',2)">⭐</span>
+        <span class="star" onclick="setStars('overall',3)">⭐</span>
+        <span class="star" onclick="setStars('overall',4)">⭐</span>
+        <span class="star" onclick="setStars('overall',5)">⭐</span>
+      </div>
+    </div>
+
+    <div class="sub-ratings" id="sub-ratings-grid"></div>
+
+    <div class="field" style="margin-top:1rem">
+      <label class="field-label">Does it take you back to your childhood?</label>
+      <div class="chips" id="chips-vibe">
+        <span class="chip" onclick="toggleMulti(this,'vibe')">Yes</span>
+        <span class="chip" onclick="toggleMulti(this,'vibe')">No :(</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Anything else?</label>
+      <textarea id="notes" placeholder="..."></textarea>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Would you take me here?</label>
+      <select id="recommend">
+        <option value="">Choose…</option>
+        <option>Absolutely</option>
+        <option>If we are not busy</option>
+        <option>Only if we are nearby</option>
+        <option>Hard no</option>
+      </select>
+    </div>
+
+    <button class="submit-btn" onclick="submitReview()">yalla on to the next one →</button>
+  </div>
+
+  <div class="panel" id="panel-feed">
+    <div id="feed-header" style="display:none;margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--muted)" id="feed-count"></span>
+        <span style="font-size:11px;color:var(--muted)">best → worst</span>
+      </div>
+    </div>
+    <div class="feed" id="feed"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Bagel logged! 🥯</div>
+
+<script>
+const SUB_RATINGS = ['Chewiness','Crunch','Flavor','Value','Aesthetics','Fun to eat'];
+
+const ratings = { overall: 0 };
+SUB_RATINGS.forEach(k => ratings[k] = 0);
+
+const picks = { type: null, schmear: [], toppings: [], vibe: [] };
+
+(function buildSubRatings() {
+  const grid = document.getElementById('sub-ratings-grid');
+  SUB_RATINGS.forEach(name => {
+    const key = name.toLowerCase().replace(/\s+/g,'_');
+    const div = document.createElement('div');
+    div.innerHTML = `<div class="sub-r-label">${name}</div><div class="mini-stars" id="stars-${key}">` +
+      [1,2,3,4,5].map(n=>`<span class="mini-star" onclick="setStars('${key}',${n})">⭐</span>`).join('') +
+      `</div>`;
+    grid.appendChild(div);
+    ratings[key] = 0;
+  });
+})();
+
+function switchTab(t) {
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(t==='log'&&i===0)||(t==='feed'&&i===1)));
+  document.getElementById('panel-log').classList.toggle('active', t==='log');
+  document.getElementById('panel-feed').classList.toggle('active', t==='feed');
+  if (t==='feed') renderFeed();
+}
+
+function toggleSingle(el, group) {
+  document.querySelectorAll(`#chips-${group} .chip`).forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  picks[group] = el.textContent;
+}
+
+function toggleMulti(el, group) {
+  el.classList.toggle('on');
+  const v = el.textContent;
+  const i = picks[group].indexOf(v);
+  i > -1 ? picks[group].splice(i,1) : picks[group].push(v);
+}
+
+function setStars(key, val) {
+  ratings[key] = val;
+  const id = key==='overall' ? 'overall-stars' : `stars-${key}`;
+  const cls = key==='overall' ? 'star' : 'mini-star';
+  document.querySelectorAll(`#${id} .${cls}`).forEach((s,i)=>s.classList.toggle('on', i<val));
+}
+
+function submitReview() {
+  const restaurant = document.getElementById('restaurant').value.trim();
+  if (!restaurant) { alert('Please add a restaurant name.'); return; }
+  if (!ratings.overall) { alert('Please give an overall rating.'); return; }
+
+  const review = {
+    id: Date.now(),
+    restaurant,
+    type: picks.type,
+    schmear: [...picks.schmear],
+    toppings: [...picks.toppings],
+    vibes: [...picks.vibe],
+    ratings: { ...ratings },
+    notes: document.getElementById('notes').value.trim(),
+    recommend: document.getElementById('recommend').value,
+    date: new Date().toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' })
+  };
+
+  const reviews = getReviews();
+  reviews.unshift(review);
+  saveReviews(reviews);
+  updateBadge(reviews.length);
+  showToast();
+  resetForm();
+}
+
+function getReviews() { try { return JSON.parse(localStorage.getItem('bagel-reviews')||'[]'); } catch { return []; } }
+function saveReviews(r) { localStorage.setItem('bagel-reviews', JSON.stringify(r)); }
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+function resetForm() {
+  document.getElementById('restaurant').value = '';
+  document.getElementById('notes').value = '';
+  document.getElementById('recommend').value = '';
+  Object.keys(ratings).forEach(k=>ratings[k]=0);
+  picks.type=null; picks.schmear=[]; picks.toppings=[]; picks.vibe=[];
+  document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));
+  document.querySelectorAll('.star.on, .mini-star.on').forEach(s=>s.classList.remove('on'));
+}
+
+function starsStr(n) { return n ? '⭐'.repeat(Math.round(n))+'☆'.repeat(5-Math.round(n)) : ''; }
+
+function renderFeed() {
+  const reviews = getReviews();
+  const feed = document.getElementById('feed');
+  const bar = document.getElementById('stat-bar');
+
+  if (!reviews.length) {
+    document.getElementById('feed-header').style.display='none';
+    feed.innerHTML=`<div class="empty"><div class="empty-emoji">🥯</div><h2>No bagels yet</h2><p>Head out and find your first one — New York is waiting.</p></div>`;
+    return;
+  }
+
+  document.getElementById('feed-header').style.display='block';
+  document.getElementById('feed-count').textContent=`${reviews.length} bagel${reviews.length===1?'':'s'} tried`;
+
+  const sorted=[...reviews].sort((a,b)=>b.ratings.overall-a.ratings.overall);
+
+  feed.innerHTML=sorted.map((r,i)=>{
+    const allChips=[
+      r.type ? `<span class="review-chip accent">${esc(r.type)}</span>` : '',
+      ...(r.schmear||[]).map(s=>`<span class="review-chip">${esc(s)}</span>`),
+      ...(r.toppings||[]).map(t=>`<span class="review-chip">${esc(t)}</span>`),
+      ...(r.vibes||[]).map(v=>`<span class="review-chip">${esc(v)}</span>`),
+    ].join('');
+    const subKeys=SUB_RATINGS.map(n=>n.toLowerCase().replace(/\s+/g,'_'));
+    const subHtml=subKeys.filter(k=>r.ratings[k]).map(k=>`<div class="review-sub-item">${SUB_RATINGS[subKeys.indexOf(k)]}: ${'⭐'.repeat(r.ratings[k])}</div>`).join('');
+    return `<div class="review-card">
+      <div class="review-top">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-family:'Playfair Display',serif;font-size:13px;color:var(--sesame);font-weight:700;flex-shrink:0">#${i+1}</span>
+          <div class="review-shop">${esc(r.restaurant)}</div>
+        </div>
+        <div class="review-meta"><span></span><span class="review-date">${r.date}</span></div>
+      </div>
+      <div class="review-body">
+        <div class="review-stars-row">${starsStr(r.ratings.overall)}</div>
+        ${allChips ? `<div class="review-chips">${allChips}</div>` : ''}
+        ${r.notes ? `<div class="review-notes">${esc(r.notes)}</div>` : ''}
+        ${subHtml ? `<div class="review-sub">${subHtml}</div>` : ''}
+        ${r.recommend ? `<div class="review-verdict">Take you there? <span class="verdict-val">${esc(r.recommend)}</span></div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function updateBadge(n) { document.getElementById('count-badge').textContent = n>0?`${n} bagel${n===1?'':'s'}`:'NYC'; }
+
+updateBadge(getReviews().length);
+
+function showCustomTopping() {
+  const wrap = document.getElementById('custom-topping-wrap');
+  wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';
+  if (wrap.style.display === 'flex') {
+    wrap.style.flexDirection = 'column';
+    setTimeout(()=>document.getElementById('custom-topping-input').focus(), 50);
+  }
+}
+
+function addCustomTopping() {
+  const input = document.getElementById('custom-topping-input');
+  const val = input.value.trim();
+  if (!val) return;
+  const chips = document.getElementById('chips-toppings');
+  const addBtn = document.getElementById('chip-add-topping');
+  const chip = document.createElement('span');
+  chip.className = 'chip on';
+  chip.textContent = val;
+  chip.onclick = function() { toggleMulti(this, 'toppings'); };
+  chips.insertBefore(chip, addBtn);
+  picks.toppings.push(val);
+  input.value = '';
+  document.getElementById('custom-topping-wrap').style.display = 'none';
+}
+</script>
+</body>
+</html>
