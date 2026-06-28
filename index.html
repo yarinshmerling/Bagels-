@@ -467,7 +467,7 @@ function renderFeed() {
 
   if (!reviews.length) {
     document.getElementById('feed-header').style.display='none';
-    feed.innerHTML=`<div class="empty"><div class="empty-emoji">🥯</div><h2>No bagels yet</h2><p>Head out and find your first one — New York is waiting.</p></div>`;
+    feed.innerHTML=`<div class="empty"><h2>No bagels yet</h2><p>Head out and find your first one — New York is waiting.</p></div>`;
     return;
   }
 
@@ -487,9 +487,12 @@ function renderFeed() {
     const subHtml=subKeys.filter(k=>r.ratings[k]).map(k=>`<div class="review-sub-item">${SUB_RATINGS[subKeys.indexOf(k)]}: ${'⭐'.repeat(r.ratings[k])}</div>`).join('');
     return `<div class="review-card">
       <div class="review-top">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-family:'Playfair Display',serif;font-size:13px;color:var(--sesame);font-weight:700;flex-shrink:0">#${i+1}</span>
-          <div class="review-shop">${esc(r.restaurant)}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-family:'Playfair Display',serif;font-size:13px;color:var(--sesame);font-weight:700;flex-shrink:0">#${i+1}</span>
+            <div class="review-shop">${esc(r.restaurant)}</div>
+          </div>
+          <button onclick="deleteReview(${r.id})" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:2px 6px;flex-shrink:0;line-height:1" title="Delete">×</button>
         </div>
         <div class="review-meta"><span></span><span class="review-date">${r.date}</span></div>
       </div>
@@ -508,6 +511,14 @@ function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 function updateBadge(n) { document.getElementById('count-badge').textContent = n>0?`${n} bagel${n===1?'':'s'}`:'NYC'; }
 
 updateBadge(getReviews().length);
+
+function deleteReview(id) {
+  if (!confirm('Remove this bagel?')) return;
+  const reviews = getReviews().filter(r => r.id !== id);
+  saveReviews(reviews);
+  updateBadge(reviews.length);
+  renderFeed();
+}
 
 function showCustomTopping() {
   const wrap = document.getElementById('custom-topping-wrap');
